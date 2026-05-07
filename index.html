@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lekora</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: #f2f2f7; margin: 0; padding: 0; color: #1c1c1e; }
+
+        /* DEMO BAR */
+        .demo-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0.375rem 0.875rem; font-size: 0.75rem; }
+        .demo-bar-label { color: #64748b; font-weight: 500; }
+        .demo-bar-btns { display: flex; gap: 0.375rem; }
+        .demo-btn { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 600; cursor: pointer; border: none; color: white; transition: background 0.15s; }
+
+        /* TOP HEADER */
+        .top-header { position: fixed; top: 2rem; left: 0; right: 0; z-index: 90; background: rgba(242,242,247,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.1); padding: 0.75rem 1rem; display: flex; align-items: center; min-height: 3.25rem; }
+        .top-header-back { color: #007aff; font-size: 1rem; background: none; border: none; cursor: pointer; padding: 0.25rem 0.5rem 0.25rem 0; display: flex; align-items: center; gap: 0.25rem; font-size: 0.9375rem; white-space: nowrap; }
+        .top-header-title { font-size: 1.0625rem; font-weight: 700; color: #1c1c1e; flex: 1; text-align: center; }
+        .top-header-action { color: #007aff; font-size: 0.9375rem; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0.25rem 0 0.25rem 0.5rem; white-space: nowrap; }
+        .top-header-spacer { width: 4rem; }
+
+        /* CONTENT */
+        .content { padding-top: 5.5rem; padding-bottom: 5.5rem; min-height: 100vh; }
+        .content-inner { padding: 0.75rem 1rem; }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 90; background: rgba(249,249,249,0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(0,0,0,0.12); display: flex; padding: 0.25rem 0 0.75rem; }
+        .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.375rem 0.25rem; cursor: pointer; border: none; background: none; }
+        .nav-tab-icon { font-size: 1.375rem; line-height: 1; }
+        .nav-tab-label { font-size: 0.625rem; font-weight: 500; color: #8e8e93; }
+        .nav-tab.active .nav-tab-icon { filter: none; }
+        .nav-tab.active .nav-tab-label { color: #007aff; font-weight: 600; }
+
+        /* CARDS */
+        .card { background: white; border-radius: 0.75rem; margin-bottom: 0.75rem; overflow: hidden; }
+        .card-row { display: flex; align-items: center; padding: 0.875rem 1rem; border-bottom: 1px solid #f2f2f7; gap: 0.75rem; }
+        .card-row:last-child { border-bottom: none; }
+        .card-section-title { font-size: 0.8125rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.75rem 1rem 0.375rem; }
+
+        /* STAT GRID */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem; margin-bottom: 0.75rem; }
+        .stat-card { background: white; border-radius: 0.75rem; padding: 1rem; }
+        .stat-label { font-size: 0.8125rem; color: #6b7280; font-weight: 500; margin-bottom: 0.25rem; }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+
+        /* REFERRAL CARD */
+        .ref-card { background: white; border-radius: 0.75rem; margin-bottom: 0.625rem; padding: 1rem; }
+        .ref-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem; }
+        .ref-card-vendor { font-weight: 600; font-size: 1rem; color: #1c1c1e; }
+        .ref-card-type { font-size: 0.8125rem; font-weight: 600; color: #007aff; margin-top: 0.125rem; }
+        .ref-card-client { font-size: 0.875rem; color: #48484a; margin-top: 0.375rem; }
+        .ref-card-property { font-size: 0.8125rem; color: #8e8e93; margin-top: 0.25rem; }
+        .ref-card-desc { font-size: 0.875rem; color: #48484a; margin-top: 0.5rem; background: #f9f9f9; border-radius: 0.5rem; padding: 0.625rem 0.75rem; }
+        .ref-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.625rem; padding-top: 0.625rem; border-top: 1px solid #f2f2f7; }
+
+        /* VENDOR CARD */
+        .vendor-card { background: white; border-radius: 0.75rem; margin-bottom: 0.625rem; padding: 1rem; display: flex; align-items: flex-start; gap: 0.875rem; }
+        .vendor-avatar { width: 2.75rem; height: 2.75rem; background: #e8faf8; border-radius: 0.625rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; color: #0d9488; font-size: 1rem; }
+        .vendor-name { font-weight: 600; font-size: 0.9375rem; color: #1c1c1e; }
+        .vendor-type { font-size: 0.8125rem; font-weight: 600; color: #007aff; margin-top: 0.125rem; }
+        .vendor-contact { font-size: 0.8125rem; color: #8e8e93; margin-top: 0.375rem; line-height: 1.6; }
+
+        /* BADGES */
+        .badge { display: inline-flex; align-items: center; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+        .badge-contacted { background: #dbeafe; color: #1d4ed8; }
+        .badge-in_progress { background: #fef3c7; color: #b45309; }
+        .badge-completed { background: #dcfce7; color: #15803d; }
+        .badge-declined { background: #fee2e2; color: #b91c1c; }
+        .badge-pending { background: #f3f4f6; color: #6b7280; }
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-client-req { background: #ede9fe; color: #6d28d9; }
+
+        /* BUTTONS */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; border-radius: 0.625rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; font-family: inherit; }
+        .btn:active { opacity: 0.75; }
+        .btn-primary { background: #007aff; color: white; }
+        .btn-secondary { background: #e5e5ea; color: #1c1c1e; }
+        .btn-danger { background: #fee2e2; color: #b91c1c; }
+        .btn-full { width: 100%; padding: 0.875rem; font-size: 1rem; border-radius: 0.75rem; }
+        .btn-md { padding: 0.5rem 1rem; font-size: 0.9375rem; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+        .btn-teal { background: #0d9488; color: white; }
+
+        /* FORMS */
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.875rem; font-weight: 600; color: #48484a; margin-bottom: 0.375rem; }
+        .form-input, .form-select, .form-textarea { width: 100%; border: 1px solid #d1d1d6; border-radius: 0.625rem; padding: 0.75rem; font-size: 1rem; outline: none; font-family: inherit; background: white; color: #1c1c1e; -webkit-appearance: none; appearance: none; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #007aff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        .form-textarea { resize: vertical; }
+        .form-card { background: white; border-radius: 0.75rem; padding: 1.125rem; margin-bottom: 0.75rem; }
+        .form-hint { font-size: 0.8125rem; color: #8e8e93; margin-top: 0.375rem; }
+        .info-box { background: #eff6ff; border-radius: 0.625rem; padding: 0.875rem; font-size: 0.8125rem; color: #1d4ed8; line-height: 1.5; margin-bottom: 1rem; }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 200; }
+        .modal { background: white; border-radius: 1.25rem 1.25rem 0 0; padding: 1.5rem 1.25rem 2.5rem; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-handle { width: 2.5rem; height: 0.25rem; background: #d1d1d6; border-radius: 9999px; margin: 0 auto 1.25rem; }
+        .modal-title { font-size: 1.125rem; font-weight: 700; color: #1c1c1e; margin-bottom: 0.375rem; }
+        .modal-subtitle { font-size: 0.875rem; color: #8e8e93; margin-bottom: 1.25rem; line-height: 1.5; }
+
+        /* TOAST */
+        .toast { position: fixed; bottom: 5.5rem; left: 1rem; right: 1rem; background: #1c1c1e; color: white; padding: 0.875rem 1rem; border-radius: 0.75rem; font-size: 0.9rem; z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,0.3); animation: toastIn 0.25s ease; text-align: center; }
+        @keyframes toastIn { from { transform: translateY(1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* MISC */
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.625rem; }
+        .section-title { font-size: 1.0625rem; font-weight: 700; color: #1c1c1e; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: #8e8e93; }
+        .chip-row { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; margin-bottom: 0.75rem; scrollbar-width: none; }
+        .chip-row::-webkit-scrollbar { display: none; }
+        .chip { padding: 0.375rem 0.875rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1.5px solid #d1d1d6; background: white; color: #48484a; }
+        .chip.active { background: #007aff; border-color: #007aff; color: white; }
+        .divider { height: 1px; background: #f2f2f7; margin: 0.25rem 0; }
+        .feedback-box { background: #f0fdf4; border-radius: 0.625rem; padding: 0.75rem; font-size: 0.875rem; color: #166534; margin-top: 0.625rem; line-height: 1.5; }
+        .select-arrow { position: relative; }
+        .select-arrow::after { content: '›'; position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%) rotate(90deg); color: #8e8e93; pointer-events: none; font-size: 1.125rem; }
+        .select-arrow .form-select { padding-right: 2rem; }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// =============================================================================
+// FAKE DATA
+// =============================================================================
+const db = {
+    vendorTypes: ["HVAC","Painter","Roofer","Plumber","Electrician","Landscaper","Carpenter","Inspector","Flooring","General Contractor"],
+    propertyStatuses: { currently_owned:"Currently Owned", purchasing:"Purchasing", under_contract:"Under Contract", sold:"Sold", rental:"Rental" },
+    vendors: [
+        { id:1, name:"Tom's Roofing & Repair", type:"Roofer", phone:"503-555-0101", email:"tom@tomsroofing.com", smsCapable:true, status:"active", addedBy:"Sarah Mitchell" },
+        { id:2, name:"City HVAC Services", type:"HVAC", phone:"503-555-0102", email:"info@cityhvac.com", smsCapable:true, status:"active", addedBy:"Sarah Mitchell" },
+        { id:3, name:"Premier Painting Co.", type:"Painter", phone:"503-555-0103", email:"hello@premierpainting.com", smsCapable:false, status:"active", addedBy:"Michael Torres" },
+        { id:4, name:"Ace Plumbing Solutions", type:"Plumber", phone:"503-555-0104", email:"ace@aceplumbing.com", smsCapable:true, status:"active", addedBy:"Sarah Mitchell" },
+        { id:5, name:"Bright Electric", type:"Electrician", phone:"503-555-0105", email:"info@brightelectric.com", smsCapable:true, status:"active", addedBy:"Jennifer Park" },
+        { id:6, name:"Pacific Landscaping", type:"Landscaper", phone:"503-555-0106", email:"pacific@landscaping.com", smsCapable:true, status:"pending", addedBy:"Sarah Mitchell" },
+    ],
+    clients: [
+        { id:1, name:"James & Linda Chen", email:"james.chen@email.com", phone:"503-555-1001", properties:[
+            { id:1, address:"142 Oak Street, Portland, OR 97201", status:"currently_owned" },
+            { id:2, address:"8821 Maple Ave, Lake Oswego, OR 97034", status:"purchasing" },
+        ]},
+        { id:2, name:"Marcus Williams", email:"m.williams@email.com", phone:"503-555-1002", properties:[
+            { id:3, address:"5503 Pine Rd, Beaverton, OR 97005", status:"currently_owned" },
+        ]},
+        { id:3, name:"Rachel Torres", email:"rachel.torres@email.com", phone:"503-555-1003", properties:[
+            { id:4, address:"99 Birch Lane, Portland, OR 97204", status:"rental" },
+            { id:5, address:"220 Cedar Blvd, Tigard, OR 97223", status:"currently_owned" },
+        ]},
+    ],
+    referrals: [
+        { id:1, agentId:"sarah", clientId:1, vendorId:1, propertyId:1, status:"in_progress", jobValue:8500, description:"Full roof replacement, approx. 2,000 sq ft. Some storm damage on south-facing slope.", date:"2026-04-15", initiatedBy:"agent", feedback:null },
+        { id:2, agentId:"sarah", clientId:1, vendorId:2, propertyId:2, status:"contacted", jobValue:3200, description:"New HVAC system installation for 3BR home. Client wants high-efficiency unit.", date:"2026-04-28", initiatedBy:"agent", feedback:null },
+        { id:3, agentId:"sarah", clientId:2, vendorId:3, propertyId:3, status:"completed", jobValue:2100, description:"Interior painting — 3 bedrooms, living room, and hallway. Neutral tones preferred.", date:"2026-03-10", initiatedBy:"agent", feedback:{ text:"Premier Painting did a fantastic job. Very clean work, finished ahead of schedule.", left:true } },
+        { id:4, agentId:"sarah", clientId:3, vendorId:4, propertyId:4, status:"declined", jobValue:null, description:"Kitchen sink repair — slow drain and minor leak under cabinet.", date:"2026-04-02", initiatedBy:"client", feedback:{ text:"They never showed up for the estimate. Would not recommend.", left:true } },
+        { id:5, agentId:"sarah", clientId:3, vendorId:5, propertyId:4, status:"contacted", jobValue:1800, description:"Electrical panel upgrade from 100A to 200A service.", date:"2026-04-30", initiatedBy:"agent", feedback:null },
+    ],
+};
+
+// =============================================================================
+// STATE
+// =============================================================================
+let state = {
+    role: "agent",
+    screen: "dashboard",
+    params: {},
+    modal: null,
+    toast: null,
+    newReferral: {},
+    newVendor: {},
+    newClient: {},
+};
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+const getVendor = id => db.vendors.find(v => v.id === id);
+const getClient = id => db.clients.find(c => c.id === id);
+const getProp   = (cid, pid) => getClient(cid)?.properties.find(p => p.id === pid);
+
+function badge(status) {
+    const labels = { contacted:"Contacted", in_progress:"In Progress", completed:"Completed", declined:"Declined", pending:"Pending", active:"Active" };
+    return `<span class="badge badge-${status}">${labels[status] || status}</span>`;
+}
+function fmt(d) { return new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
+function money(v) { return v ? "$"+v.toLocaleString() : "—"; }
+
+function showToast(msg) {
+    state.toast = msg;
+    render();
+    setTimeout(() => { state.toast = null; render(); }, 3000);
+}
+function go(screen, params={}) {
+    state.screen = screen;
+    state.params = params;
+    state.modal = null;
+    window.scrollTo(0,0);
+    render();
+}
+function switchRole(role) {
+    state.role = role;
+    state.screen = role==="agent" ? "dashboard" : role==="vendor" ? "vendor-jobs" : "client-referrals";
+    state.modal = null;
+    render();
+}
+
+// =============================================================================
+// CHROME
+// =============================================================================
+function demBar() {
+    return `<div class="demo-bar">
+        <span class="demo-bar-label">🎭 Demo</span>
+        <div class="demo-bar-btns">
+            ${["agent","vendor","client"].map(r=>`<button class="demo-btn" onclick="switchRole('${r}')" style="background:${state.role===r?"#0d9488":"#334155"}">${r.charAt(0).toUpperCase()+r.slice(1)}</button>`).join("")}
+        </div>
+    </div>`;
+}
+
+// Per-screen header config
+const headerConfigs = {
+    dashboard:        { title:"Lekora",         back:null,        action:{ label:"+ Referral", screen:"referrals/new" } },
+    referrals:        { title:"Referrals",       back:null,        action:{ label:"+ New",      screen:"referrals/new" } },
+    "referrals/new":  { title:"New Referral",    back:"referrals", action:null },
+    vendors:          { title:"Vendors",         back:null,        action:{ label:"+ Add",      screen:"vendors/new" } },
+    "vendors/new":    { title:"Add Vendor",      back:"vendors",   action:null },
+    clients:          { title:"Clients",         back:null,        action:{ label:"+ Add", screen:"clients/new" } },
+    "clients/new":    { title:"New Client",      back:"clients",   action:null },
+    "vendor-jobs":    { title:"My Jobs",         back:null,        action:null },
+    "client-referrals":{ title:"My Referrals",  back:null,        action:null },
+    "client-browse":  { title:"Find a Vendor",  back:null,        action:null },
+};
+
+function topHeader() {
+    const cfg = headerConfigs[state.screen] || { title:"", back:null, action:null };
+    const left = cfg.back
+        ? `<button class="top-header-back" onclick="go('${cfg.back}')">‹ Back</button>`
+        : `<div class="top-header-spacer"></div>`;
+    const right = cfg.action
+        ? `<button class="top-header-action" onclick="go('${cfg.action.screen}')">${cfg.action.label}</button>`
+        : `<div class="top-header-spacer"></div>`;
+    return `<div class="top-header">${left}<div class="top-header-title">${cfg.title}</div>${right}</div>`;
+}
+
+function bottomNav() {
+    const tabs = {
+        agent:  [
+            { icon:"🏠", label:"Home",     screen:"dashboard" },
+            { icon:"↔️",  label:"Referrals",screen:"referrals" },
+            { icon:"🏪",  label:"Vendors",  screen:"vendors" },
+            { icon:"👥",  label:"Clients",  screen:"clients" },
+        ],
+        vendor: [
+            { icon:"📋",  label:"My Jobs",  screen:"vendor-jobs" },
+        ],
+        client: [
+            { icon:"↔️",  label:"Referrals",screen:"client-referrals" },
+            { icon:"🔍",  label:"Find",     screen:"client-browse" },
+        ],
+    };
+    return `<div class="bottom-nav">
+        ${(tabs[state.role]||[]).map(t=>`
+        <button class="nav-tab ${state.screen===t.screen||state.screen===t.screen+"/new"?"active":""}" onclick="go('${t.screen}')">
+            <span class="nav-tab-icon">${t.icon}</span>
+            <span class="nav-tab-label" style="${state.screen===t.screen||state.screen===t.screen+"/new"?"color:#007aff":""}">${t.label}</span>
+        </button>`).join("")}
+    </div>`;
+}
+
+// =============================================================================
+// AGENT: DASHBOARD
+// =============================================================================
+function screenDashboard() {
+    const refs = db.referrals;
+    const active = refs.filter(r=>["contacted","in_progress"].includes(r.status)).length;
+    const completed = refs.filter(r=>r.status==="completed").length;
+    const recent = [...refs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+    return `
+    <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Total Referrals</div><div class="stat-value" style="color:#1c1c1e">${refs.length}</div></div>
+        <div class="stat-card"><div class="stat-label">Active Jobs</div><div class="stat-value" style="color:#007aff">${active}</div></div>
+        <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value" style="color:#15803d">${completed}</div></div>
+        <div class="stat-card"><div class="stat-label">Vendors</div><div class="stat-value" style="color:#1c1c1e">${db.vendors.length}</div></div>
+    </div>
+
+    <div class="section-header">
+        <div class="section-title">Recent Referrals</div>
+        <button onclick="go('referrals')" style="color:#007aff;font-size:0.875rem;font-weight:600;background:none;border:none;cursor:pointer;">See all</button>
+    </div>
+
+    ${recent.map(r => {
+        const v=getVendor(r.vendorId), c=getClient(r.clientId), p=getProp(r.clientId,r.propertyId);
+        return `<div class="ref-card">
+            <div class="ref-card-top">
+                <div>
+                    <div class="ref-card-vendor">${v?.name}</div>
+                    <div class="ref-card-type">${v?.type}</div>
+                </div>
+                ${badge(r.status)}
+            </div>
+            <div class="ref-card-client">👤 ${c?.name}</div>
+            ${p?`<div class="ref-card-property">📍 ${p.address.split(",")[0]}</div>`:""}
+            <div class="ref-card-footer">
+                ${r.initiatedBy==="client"?'<span class="badge badge-client-req">Client Request</span>':'<span style="color:#8e8e93;font-size:0.8125rem;">Agent</span>'}
+                <span style="color:#8e8e93;font-size:0.8125rem;">${fmt(r.date)}</span>
+            </div>
+        </div>`;
+    }).join("")}`;
+}
+
+// =============================================================================
+// AGENT: REFERRALS LIST
+// =============================================================================
+function screenReferrals() {
+    return db.referrals.map(r => {
+        const v=getVendor(r.vendorId), c=getClient(r.clientId), p=getProp(r.clientId,r.propertyId);
+        return `<div class="ref-card">
+            <div class="ref-card-top">
+                <div>
+                    <div class="ref-card-vendor">${v?.name}</div>
+                    <div class="ref-card-type">${v?.type}</div>
+                </div>
+                ${badge(r.status)}
+            </div>
+            <div class="ref-card-client">👤 ${c?.name}</div>
+            ${p?`<div class="ref-card-property">📍 ${p.address.split(",")[0]}</div>`:""}
+            ${r.jobValue?`<div style="font-size:0.875rem;color:#0d9488;font-weight:600;margin-top:0.375rem;">${money(r.jobValue)}</div>`:""}
+            <div class="ref-card-footer">
+                ${r.initiatedBy==="client"?'<span class="badge badge-client-req">Client Request</span>':'<span style="color:#8e8e93;font-size:0.8125rem;">Agent</span>'}
+                <span style="color:#8e8e93;font-size:0.8125rem;">${fmt(r.date)}</span>
+            </div>
+        </div>`;
+    }).join("");
+}
+
+// =============================================================================
+// AGENT: NEW REFERRAL
+// =============================================================================
+function screenNewReferral() {
+    const nr = state.newReferral;
+    const selClient = nr.clientId ? getClient(parseInt(nr.clientId)) : null;
+    const filteredVendors = nr.vendorType ? db.vendors.filter(v=>v.type===nr.vendorType) : [];
+    return `<div class="form-card">
+        <div class="form-group">
+            <label class="form-label">Client *</label>
+            <div class="select-arrow">
+                <select class="form-select" onchange="updateNR('clientId',this.value)">
+                    <option value="">Select a client...</option>
+                    ${db.clients.map(c=>`<option value="${c.id}" ${nr.clientId==c.id?"selected":""}>${c.name}</option>`).join("")}
+                </select>
+            </div>
+        </div>
+
+        ${selClient ? `<div class="form-group">
+            <label class="form-label">Property <span style="color:#8e8e93;font-weight:400;">(optional)</span></label>
+            <div class="select-arrow">
+                <select class="form-select" onchange="updateNR('propertyId',this.value)">
+                    <option value="">No specific property</option>
+                    ${selClient.properties.map(p=>`<option value="${p.id}" ${nr.propertyId==p.id?"selected":""}>${p.address.split(",")[0]} — ${db.propertyStatuses[p.status]}</option>`).join("")}
+                </select>
+            </div>
+        </div>` : ""}
+
+        <div class="form-group">
+            <label class="form-label">Vendor Type *</label>
+            <div class="select-arrow">
+                <select class="form-select" onchange="updateNR('vendorType',this.value)">
+                    <option value="">Select type...</option>
+                    ${db.vendorTypes.map(t=>`<option value="${t}" ${nr.vendorType===t?"selected":""}>${t}</option>`).join("")}
+                </select>
+            </div>
+        </div>
+
+        ${nr.vendorType ? `<div class="form-group">
+            <label class="form-label">Vendor *</label>
+            ${filteredVendors.length
+                ? `<div class="select-arrow"><select class="form-select" onchange="updateNR('vendorId',this.value)">
+                    <option value="">Select a vendor...</option>
+                    ${filteredVendors.map(v=>`<option value="${v.id}" ${nr.vendorId==v.id?"selected":""}>${v.name}</option>`).join("")}
+                   </select></div>`
+                : `<div style="padding:0.75rem;background:#fef9c3;border-radius:0.625rem;font-size:0.875rem;color:#854d0e;">No ${nr.vendorType} vendors yet. <button onclick="go('vendors/new')" style="color:#007aff;font-weight:600;background:none;border:none;cursor:pointer;">Add one</button></div>`
+            }
+        </div>` : ""}
+
+        <div class="form-group">
+            <label class="form-label">Est. Job Value <span style="color:#8e8e93;font-weight:400;">(optional)</span></label>
+            <div style="position:relative;">
+                <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:#8e8e93;">$</span>
+                <input type="number" class="form-input" style="padding-left:1.5rem;" placeholder="0" value="${nr.jobValue||""}" onchange="updateNR('jobValue',this.value)">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description <span style="color:#8e8e93;font-weight:400;">(optional)</span></label>
+            <textarea class="form-textarea" rows="3" placeholder="Describe the work needed..." onchange="updateNR('description',this.value)">${nr.description||""}</textarea>
+        </div>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="submitReferral()">Create Referral</button>
+    <button class="btn btn-secondary btn-full" style="margin-top:0.625rem;" onclick="go('referrals')">Cancel</button>`;
+}
+function updateNR(f,v) {
+    state.newReferral[f]=v;
+    if(f==="clientId") state.newReferral.propertyId="";
+    if(f==="vendorType") state.newReferral.vendorId="";
+    render();
+}
+function submitReferral() {
+    const nr=state.newReferral;
+    if(!nr.clientId||!nr.vendorType||!nr.vendorId) { showToast("Please fill in all required fields."); return; }
+    const id=Math.max(...db.referrals.map(r=>r.id))+1;
+    db.referrals.unshift({ id, agentId:"sarah", clientId:parseInt(nr.clientId), vendorId:parseInt(nr.vendorId), propertyId:nr.propertyId?parseInt(nr.propertyId):null, status:"contacted", jobValue:nr.jobValue?parseInt(nr.jobValue):null, description:nr.description||null, date:new Date().toISOString().split("T")[0], initiatedBy:"agent", feedback:null });
+    state.newReferral={};
+    showToast("✓ Referral created. Vendor notified.");
+    go("referrals");
+}
+
+// =============================================================================
+// AGENT: VENDORS
+// =============================================================================
+function screenVendors() {
+    const f=state.params.filter||"";
+    const list=f?db.vendors.filter(v=>v.type===f):db.vendors;
+    const types=[...new Set(db.vendors.map(v=>v.type))].sort();
+    return `<div class="chip-row">
+        <span class="chip ${!f?"active":""}" onclick="go('vendors',{filter:''})">All</span>
+        ${types.map(t=>`<span class="chip ${f===t?"active":""}" onclick="go('vendors',{filter:'${t}'})">${t}</span>`).join("")}
+    </div>
+    ${list.map(v=>`<div class="vendor-card">
+        <div class="vendor-avatar">${v.name[0]}</div>
+        <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;">
+                <div class="vendor-name">${v.name}</div>
+                ${badge(v.status)}
+            </div>
+            <div class="vendor-type">${v.type}</div>
+            <div class="vendor-contact">
+                ${v.email?`✉ ${v.email}<br>`:""}
+                📱 ${v.phone}${v.smsCapable?' <span style="color:#0d9488;font-size:0.75rem;font-weight:600;">(SMS ✓)</span>':""}
+            </div>
+            <div style="font-size:0.75rem;color:#c7c7cc;margin-top:0.25rem;">Added by ${v.addedBy}</div>
+        </div>
+    </div>`).join("")}`;
+}
+
+// =============================================================================
+// AGENT: ADD VENDOR
+// =============================================================================
+function screenAddVendor() {
+    const nv=state.newVendor;
+    return `<div class="form-card">
+        <div class="form-group">
+            <label class="form-label">Vendor Name *</label>
+            <input type="text" class="form-input" placeholder="e.g. Smith's Plumbing" value="${nv.name||""}" onchange="updateNV('name',this.value)">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Vendor Type *</label>
+            <div class="select-arrow">
+                <select class="form-select" onchange="updateNV('type',this.value)">
+                    <option value="">Select type...</option>
+                    ${db.vendorTypes.map(t=>`<option value="${t}" ${nv.type===t?"selected":""}>${t}</option>`).join("")}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email <span style="color:#8e8e93;font-weight:400;">(required if no phone)</span></label>
+            <input type="email" class="form-input" placeholder="vendor@email.com" autocapitalize="none" value="${nv.email||""}" onchange="updateNV('email',this.value)">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Phone <span style="color:#8e8e93;font-weight:400;">(required if no email)</span></label>
+            <input type="tel" class="form-input" placeholder="503-555-0000" value="${nv.phone||""}" onchange="updateNV('phone',this.value)">
+            ${nv.phone?`<div style="display:flex;align-items:center;gap:0.625rem;margin-top:0.625rem;padding:0.75rem;background:#f9f9f9;border-radius:0.625rem;">
+                <input type="checkbox" id="sms" ${nv.smsCapable?"checked":""} onchange="updateNV('smsCapable',this.checked)" style="width:1.25rem;height:1.25rem;accent-color:#007aff;flex-shrink:0;">
+                <label for="sms" style="font-size:0.9375rem;color:#1c1c1e;cursor:pointer;">This number can receive texts</label>
+            </div>`:""}
+        </div>
+    </div>
+    <div class="info-box">
+        <strong>How this works:</strong> We'll check if this vendor already exists in your office. If they do, they're linked to your list. Otherwise a new vendor is created, a user account set up in pending status, and they receive a welcome notification.
+    </div>
+    <button class="btn btn-primary btn-full" onclick="submitVendor()">Add Vendor</button>
+    <button class="btn btn-secondary btn-full" style="margin-top:0.625rem;" onclick="go('vendors')">Cancel</button>`;
+}
+function updateNV(f,v) { state.newVendor[f]=v; render(); }
+function submitVendor() {
+    const nv=state.newVendor;
+    if(!nv.name||!nv.type||(!nv.email&&!nv.phone)) { showToast("Name, type, and email or phone required."); return; }
+    const existing=nv.email&&db.vendors.find(v=>v.email===nv.email);
+    if(existing) { showToast(`✓ Already in your office — added to your list.`); state.newVendor={}; go("vendors"); return; }
+    const id=Math.max(...db.vendors.map(v=>v.id))+1;
+    db.vendors.push({ id, name:nv.name, type:nv.type, phone:nv.phone||null, email:nv.email||null, smsCapable:nv.smsCapable||false, status:"pending", addedBy:"Sarah Mitchell" });
+    showToast(`✓ ${nv.name} added. Welcome notification sent.`);
+    state.newVendor={};
+    go("vendors");
+}
+
+// =============================================================================
+// AGENT: CLIENTS
+// =============================================================================
+function screenClients() {
+    return db.clients.map(c => {
+        const refs=db.referrals.filter(r=>r.clientId===c.id);
+        const active=refs.filter(r=>["contacted","in_progress"].includes(r.status)).length;
+        return `<div class="card" style="margin-bottom:0.625rem;padding:1rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.625rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <div style="width:2.5rem;height:2.5rem;background:#f2f2f7;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#48484a;">${c.name[0]}</div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.9375rem;">${c.name}</div>
+                        <div style="font-size:0.8125rem;color:#8e8e93;">${refs.length} referral${refs.length!==1?"s":""}${active?` · <span style="color:#007aff;">${active} active</span>`:""}</div>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size:0.8125rem;color:#8e8e93;line-height:1.8;">
+                <div>✉ ${c.email}</div>
+                <div>📱 ${c.phone}</div>
+            </div>
+            <div style="border-top:1px solid #f2f2f7;margin-top:0.75rem;padding-top:0.75rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.375rem;">Properties</div>
+                ${c.properties.map(p=>`<div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.25rem 0;">
+                    <span style="color:#1c1c1e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:0.5rem;">${p.address.split(",")[0]}</span>
+                    <span style="color:#8e8e93;white-space:nowrap;flex-shrink:0;">${db.propertyStatuses[p.status]}</span>
+                </div>`).join("")}
+            </div>
+        </div>`;
+    }).join("");
+}
+
+// =============================================================================
+// AGENT: ADD CLIENT
+// =============================================================================
+function screenAddClient() {
+    const nc=state.newClient;
+    return `<div class="form-card">
+        <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-input" placeholder="e.g. James & Linda Chen" value="${nc.name||""}" onchange="updateNC('name',this.value)">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-input" placeholder="client@email.com" autocapitalize="none" value="${nc.email||""}" onchange="updateNC('email',this.value)">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Phone *</label>
+            <input type="tel" class="form-input" placeholder="503-555-0000" value="${nc.phone||""}" onchange="updateNC('phone',this.value)">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Property Address <span style="color:#8e8e93;font-weight:400;">(optional)</span></label>
+            <input type="text" class="form-input" placeholder="e.g. 142 Oak Street, Portland, OR" value="${nc.address||""}" onchange="updateNC('address',this.value)">
+            ${nc.address ? `<div class="form-group" style="margin-top:0.75rem;margin-bottom:0;">
+                <label class="form-label">Property Status</label>
+                <div class="select-arrow">
+                    <select class="form-select" onchange="updateNC('propStatus',this.value)">
+                        ${Object.entries(db.propertyStatuses).map(([k,v])=>`<option value="${k}" ${nc.propStatus===k?"selected":""}>${v}</option>`).join("")}
+                    </select>
+                </div>
+            </div>` : ""}
+        </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="submitClient()">Add Client</button>
+    <button class="btn btn-secondary btn-full" style="margin-top:0.625rem;" onclick="go('clients')">Cancel</button>`;
+}
+function updateNC(f,v) { state.newClient[f]=v; render(); }
+function submitClient() {
+    const nc=state.newClient;
+    if(!nc.name||!nc.email||!nc.phone) { showToast("Name, email, and phone are required."); return; }
+    const id=Math.max(...db.clients.map(c=>c.id))+1;
+    const properties=[];
+    if(nc.address) {
+        properties.push({ id: Math.max(...db.clients.flatMap(c=>c.properties.map(p=>p.id)))+1, address:nc.address, status:nc.propStatus||"currently_owned" });
+    }
+    db.clients.push({ id, name:nc.name, email:nc.email, phone:nc.phone, properties });
+    showToast(`✓ ${nc.name} added as a client.`);
+    state.newClient={};
+    go("clients");
+}
+
+// =============================================================================
+// VENDOR: JOBS
+// =============================================================================
+function screenVendorJobs() {
+    const f=state.params.jobFilter||"all";
+    const allJobs=db.referrals.filter(r=>r.vendorId===1);
+    const jobs = f==="active"  ? allJobs.filter(r=>["contacted","in_progress"].includes(r.status))
+               : f==="inactive"? allJobs.filter(r=>["completed","declined"].includes(r.status))
+               : allJobs;
+    const statuses=["contacted","in_progress","completed","declined"];
+    return `<div class="chip-row">
+        <span class="chip ${f==="all"?"active":""}"    onclick="go('vendor-jobs',{jobFilter:'all'})">All (${allJobs.length})</span>
+        <span class="chip ${f==="active"?"active":""}" onclick="go('vendor-jobs',{jobFilter:'active'})">Active (${allJobs.filter(r=>["contacted","in_progress"].includes(r.status)).length})</span>
+        <span class="chip ${f==="inactive"?"active":""}" onclick="go('vendor-jobs',{jobFilter:'inactive'})">Inactive (${allJobs.filter(r=>["completed","declined"].includes(r.status)).length})</span>
+    </div>
+    ${jobs.length===0?`<div class="empty-state">No jobs in this category.</div>`:""}
+    ${jobs.map(r=>{
+        const c=getClient(r.clientId), p=getProp(r.clientId,r.propertyId);
+        return `<div class="ref-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.625rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                    ${badge(r.status)}
+                    ${r.initiatedBy==="client"?'<span class="badge badge-client-req">Client Request</span>':""}
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="openEditJob(${r.id})">Edit</button>
+            </div>
+            <div style="font-weight:600;font-size:0.9375rem;">${c?.name}</div>
+            <div style="color:#8e8e93;font-size:0.8125rem;margin-top:0.125rem;">${fmt(r.date)}</div>
+            ${p?`<div style="font-size:0.875rem;color:#8e8e93;margin-top:0.25rem;">📍 ${p.address}</div>`:""}
+            ${r.description?`<div class="ref-card-desc">${r.description}</div>`:""}
+            ${r.jobValue?`<div style="font-size:0.875rem;font-weight:600;color:#0d9488;margin-top:0.5rem;">Est. ${money(r.jobValue)}</div>`:""}
+            <div style="margin-top:0.875rem;">
+                <div style="font-size:0.8125rem;font-weight:600;color:#8e8e93;margin-bottom:0.375rem;">Update Status</div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    ${statuses.map(s=>`<button class="btn btn-sm" style="${r.status===s?"background:#007aff;color:white":"background:#f2f2f7;color:#48484a"}" onclick="updateJobStatus(${r.id},'${s}')">${s.replace("_"," ").replace(/\b\w/g,l=>l.toUpperCase())}</button>`).join("")}
+                </div>
+            </div>
+        </div>`;
+    }).join("")}`;
+}
+function updateJobStatus(id,status) {
+    const r=db.referrals.find(r=>r.id===id);
+    if(r){ r.status=status; showToast(`✓ Status updated to "${status.replace("_"," ")}"`); render(); }
+}
+function openEditJob(id) {
+    const r=db.referrals.find(r=>r.id===id);
+    state.modal={ type:"editJob", id, description:r.description||"", jobValue:r.jobValue||"" };
+    render();
+}
+function submitEditJob() {
+    const {id,description,jobValue}=state.modal;
+    const r=db.referrals.find(r=>r.id===id);
+    r.description=description.trim()||null;
+    r.jobValue=jobValue?parseInt(jobValue):null;
+    state.modal=null;
+    showToast("✓ Job details updated.");
+    render();
+}
+
+// =============================================================================
+// CLIENT: MY REFERRALS
+// =============================================================================
+function screenClientReferrals() {
+    const refs=db.referrals.filter(r=>r.clientId===1);
+    return refs.map(r=>{
+        const v=getVendor(r.vendorId), p=getProp(r.clientId,r.propertyId);
+        const canFeedback=["completed","declined"].includes(r.status)&&!r.feedback?.left;
+        return `<div class="ref-card">
+            <div class="ref-card-top">
+                <div>
+                    <div class="ref-card-vendor">${v?.name}</div>
+                    <div class="ref-card-type">${v?.type}</div>
+                </div>
+                ${badge(r.status)}
+            </div>
+            ${p?`<div class="ref-card-property" style="margin-top:0.375rem;">📍 ${p.address}</div>`:""}
+            ${r.description?`<div style="font-size:0.875rem;color:#48484a;margin-top:0.5rem;">${r.description}</div>`:""}
+            ${r.feedback?.left?`<div class="feedback-box">💬 "${r.feedback.text}"</div>`:""}
+            <div class="ref-card-footer" style="margin-top:0.625rem;">
+                <span style="color:#8e8e93;font-size:0.8125rem;">${fmt(r.date)}</span>
+                ${canFeedback?`<button class="btn btn-teal btn-sm" onclick="openFeedback(${r.id})">Leave Feedback</button>`:""}
+            </div>
+        </div>`;
+    }).join("");
+}
+
+// =============================================================================
+// CLIENT: BROWSE VENDORS
+// =============================================================================
+function screenClientBrowse() {
+    const f=state.params.filter||"";
+    const active=db.vendors.filter(v=>v.status==="active");
+    const list=f?active.filter(v=>v.type===f):active;
+    const types=[...new Set(active.map(v=>v.type))].sort();
+    return `<div class="chip-row">
+        <span class="chip ${!f?"active":""}" onclick="go('client-browse',{filter:''})">All</span>
+        ${types.map(t=>`<span class="chip ${f===t?"active":""}" onclick="go('client-browse',{filter:'${t}'})">${t}</span>`).join("")}
+    </div>
+    ${list.map(v=>`<div class="vendor-card">
+        <div class="vendor-avatar">${v.name[0]}</div>
+        <div style="flex:1;min-width:0;">
+            <div class="vendor-name">${v.name}</div>
+            <div class="vendor-type">${v.type}</div>
+            <div class="vendor-contact">📱 ${v.phone}</div>
+            <button class="btn btn-teal btn-sm" style="margin-top:0.625rem;" onclick="selfRefer(${v.id})">Request Referral</button>
+        </div>
+    </div>`).join("")}`;
+}
+function selfRefer(vid) {
+    state.modal={ type:"selfRefer", vendorId:vid, description:"" };
+    render();
+}
+function submitSelfReferral() {
+    const {vendorId,description}=state.modal;
+    const v=getVendor(vendorId);
+    const id=Math.max(...db.referrals.map(r=>r.id))+1;
+    db.referrals.push({ id, agentId:"sarah", clientId:1, vendorId, propertyId:null, status:"contacted", jobValue:null, description:description.trim()||null, date:new Date().toISOString().split("T")[0], initiatedBy:"client", feedback:null });
+    state.modal=null;
+    showToast(`✓ Requested! ${v.name} and Sarah have been notified.`);
+    go("client-referrals");
+}
+
+// =============================================================================
+// FEEDBACK MODAL
+// =============================================================================
+function openFeedback(id) { state.modal={ type:"feedback", id, text:"" }; render(); }
+function submitFeedback() {
+    const {id,text}=state.modal;
+    if(!text.trim()) { showToast("Please write something first."); return; }
+    const r=db.referrals.find(r=>r.id===id);
+    r.feedback={ text:text.trim(), left:true };
+    state.modal=null;
+    showToast("✓ Feedback submitted. Only your agent can see this.");
+    render();
+}
+function renderModal() {
+    if(!state.modal) return "";
+    if(state.modal.type==="feedback") {
+        const r=db.referrals.find(r=>r.id===state.modal.id);
+        const v=getVendor(r.vendorId);
+        return `<div class="modal-overlay" onclick="if(event.target===this){state.modal=null;render();}">
+            <div class="modal">
+                <div class="modal-handle"></div>
+                <div class="modal-title">Leave Feedback</div>
+                <div class="modal-subtitle">How was your experience with <strong>${v?.name}</strong>? Only your agent can see this — not the vendor.</div>
+                <textarea class="form-textarea" rows="4" placeholder="Share your experience..." onchange="state.modal.text=this.value" style="margin-bottom:1rem;font-size:1rem;"></textarea>
+                <button class="btn btn-primary btn-full" onclick="submitFeedback()">Submit Feedback</button>
+                <button class="btn btn-secondary btn-full" style="margin-top:0.625rem;" onclick="state.modal=null;render()">Cancel</button>
+            </div>
+        </div>`;
+    }
+    if(state.modal.type==="selfRefer") {
+        const v=getVendor(state.modal.vendorId);
+        return `<div class="modal-overlay" onclick="if(event.target===this){state.modal=null;render();}">
+            <div class="modal">
+                <div class="modal-handle"></div>
+                <div class="modal-title">Request Referral</div>
+                <div class="modal-subtitle">Describe the work you need from <strong>${v?.name}</strong>. Your agent will be notified.</div>
+                <div class="form-group">
+                    <label class="form-label">Description <span style="color:#8e8e93;font-weight:400;">(optional)</span></label>
+                    <textarea class="form-textarea" rows="4" placeholder="What work do you need done?" onchange="state.modal.description=this.value" style="font-size:1rem;"></textarea>
+                </div>
+                <button class="btn btn-teal btn-full" onclick="submitSelfReferral()">Send Request</button>
+                <button class="btn btn-secondary btn-full" style="margin-top:0.625rem;" onclick="state.modal=null;render()">Cancel</button>
+            </div>
+        </div>`;
+    }
+    if(state.modal.type==="editJob") {
+        const r=db.referrals.find(r=>r.id===state.modal.id);
+        const c=getClient(r.clientId);
+        return `<div class="modal-overlay" onclick="if(event.target===this){state.modal=null;render();}">
+            <div class="modal">
+                <div class="modal-handle"></div>
+                <div class="modal-title">Edit Job Details</div>
+                <div class="modal-subtitle">Update details for <strong>${c?.name}</strong>.</div>
+                <div class="form-group">
+                    <label class="form-label">Estimated Value</label>
+                    <div style="position:relative;">
+                        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:#8e8e93;">$</span>
+                        <input type="number" class="form-input" style="padding-left:1.5rem;" placeholder="0" value="${state.modal.jobValue}" onchange="state.modal.jobValue=this.value">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" rows="4" onchange="state.modal.description=this.value" style="font-size:1rem;">${state.modal.description}</textarea>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="submitEditJob()">Save Changes</button>
+                <button class="btn btn-secondary btn-full" style="margin-top:0.625rem;" onclick="state.modal=null;render()">Cancel</button>
+            </div>
+        </div>`;
+    }
+    return "";
+}
+
+// =============================================================================
+// MAIN RENDER
+// =============================================================================
+function render() {
+    const screens = {
+        "dashboard":         screenDashboard,
+        "referrals":         screenReferrals,
+        "referrals/new":     screenNewReferral,
+        "vendors":           screenVendors,
+        "vendors/new":       screenAddVendor,
+        "clients":           screenClients,
+        "clients/new":       screenAddClient,
+        "vendor-jobs":       screenVendorJobs,
+        "client-referrals":  screenClientReferrals,
+        "client-browse":     screenClientBrowse,
+    };
+    const content = (screens[state.screen] || screenDashboard)();
+
+    document.getElementById("root").innerHTML = `
+        ${demBar()}
+        ${topHeader()}
+        <div class="content"><div class="content-inner">${content}</div></div>
+        ${bottomNav()}
+        ${renderModal()}
+        ${state.toast?`<div class="toast">${state.toast}</div>`:""}
+    `;
+}
+
+render();
+</script>
+</body>
+</html>
